@@ -2,7 +2,8 @@
 #define HEAP_H
 #include <functional>
 #include <stdexcept>
-
+#include <vector>
+#include <utility>
 template <typename T, typename PComparator = std::less<T> >
 class Heap
 {
@@ -62,13 +63,48 @@ public:
 private:
   /// Add whatever helper functions and data members you need below
 
-
+  std::vector<T> data_;
+  int m_;
+  PComparator comp_;
 
 
 };
 
 // Add implementation of member functions here
 
+template <typename T, typename PComparator>
+void Heap<T, PComparator>::push(const T& item) {
+  data_.push_back(item);
+  size_t current = data_.size() - 1;
+
+  while (current > 0) {
+    size_t parent = (current - 1) / m_;
+    if (!comp_(data_[current], data_[parent])) {
+      break;
+    }
+    std::swap(data_[current], data_[parent]);
+    current = parent;
+  }
+}
+
+
+template <typename T, typename PComparator>
+Heap<T, PComparator>::Heap(int m, PComparator c) : m_(m), comp_(c) {
+
+}
+template <typename T, typename PComparator>
+Heap <T, PComparator>::~Heap() {
+
+}
+
+template <typename T, typename PComparator>
+bool Heap<T, PComparator>::empty() const {
+  return data_.empty();
+}
+template <typename T, typename PComparator>
+size_t Heap<T, PComparator>::size() const {
+  return data_.size();
+}
 
 // We will start top() for you to handle the case of 
 // calling top on an empty heap
@@ -82,12 +118,12 @@ T const & Heap<T,PComparator>::top() const
     // throw the appropriate exception
     // ================================
 
-
+    throw std::underflow_error("Heap is empty");
   }
   // If we get here we know the heap has at least 1 item
   // Add code to return the top element
 
-
+  return data_[0];
 
 }
 
@@ -102,7 +138,34 @@ void Heap<T,PComparator>::pop()
     // throw the appropriate exception
     // ================================
 
+    throw std::underflow_error("Heap is empty");
+  }
 
+  data_[0] = data_.back();
+  data_.pop_back();
+
+  size_t current = 0;
+
+  while (m_ * current + 1 < data_.size()) {
+    size_t firstChild = m_ * current + 1;
+    size_t bestChild = firstChild;
+
+    //find highest priority bestChild
+    for (int offset = 1; offset < m_; ++offset) {
+      size_t child = firstChild + offset;
+
+      if (child >= data_.size()) {
+        break;
+      }
+      if (comp_(data_[child], data_[bestChild])) {
+        bestChild = child;
+      }
+    }
+    if (!comp_(data_[bestChild], data_[current])) {
+      break;
+    }
+    std::swap(data_[current], data_[bestChild]);
+    current = bestChild;
   }
 
 
